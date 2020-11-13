@@ -1,12 +1,15 @@
 package rpc.entity;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import rpc.enumeration.ResponseCode;
 import java.io.Serializable;
 
 @Data
+
 public class RpcResponse<T> implements Serializable
 {
+    public RpcResponse() {}
     //状态码
     private Integer statusCode;
 
