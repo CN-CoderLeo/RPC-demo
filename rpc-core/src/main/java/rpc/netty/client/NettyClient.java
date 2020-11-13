@@ -14,6 +14,7 @@ import rpc.codec.CommonEncoder;
 import rpc.entity.RpcRequest;
 import rpc.entity.RpcResponse;
 import rpc.serializer.JsonSerializer;
+import rpc.serializer.KryoSerializer;
 
 public class NettyClient implements RpcClient {
     private static final Logger logger = LoggerFactory.getLogger(NettyClient.class);
@@ -38,7 +39,7 @@ public class NettyClient implements RpcClient {
                     protected void initChannel(SocketChannel ch) throws Exception {
                         ChannelPipeline pipeline = ch.pipeline();
                         pipeline.addLast(new CommonDecoder())
-                                .addLast(new CommonEncoder(new JsonSerializer()))
+                                .addLast(new CommonEncoder(new KryoSerializer()))
                                 .addLast(new NettyClientHandler());
                     }
                 });

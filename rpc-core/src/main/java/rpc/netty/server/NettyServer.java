@@ -13,6 +13,7 @@ import rpc.RpcServer;
 import rpc.codec.CommonDecoder;
 import rpc.codec.CommonEncoder;
 import rpc.serializer.JsonSerializer;
+import rpc.serializer.KryoSerializer;
 
 public class NettyServer implements RpcServer  {
 
@@ -36,7 +37,7 @@ public class NettyServer implements RpcServer  {
                         @Override
                         protected void initChannel(SocketChannel ch) throws Exception {
                             ChannelPipeline pipeline = ch.pipeline();
-                            pipeline.addLast(new CommonEncoder(new JsonSerializer()));
+                            pipeline.addLast(new CommonEncoder(new KryoSerializer()));
                             pipeline.addLast(new CommonDecoder());
                             pipeline.addLast(new NettyServerHandler());
                         }
