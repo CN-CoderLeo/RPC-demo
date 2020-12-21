@@ -24,6 +24,7 @@
             <scope>compile</scope>
         </dependency>
 
+
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
@@ -49,6 +50,12 @@
             <groupId>com.esotericsoftware</groupId>
             <artifactId>kryo</artifactId>
             <version>4.0.2</version>
+        </dependency>
+        <!--hessian 序列化器         -->
+        <dependency>
+            <groupId>com.caucho</groupId>
+            <artifactId>hessian</artifactId>
+            <version>4.0.63</version>
         </dependency>
     </dependencies>
 
