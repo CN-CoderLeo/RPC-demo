@@ -6,6 +6,7 @@ import rpc.netty.server.NettyServer;
 import rpc.regisitry.DefaultServiceRegistry;
 import rpc.regisitry.ServiceRegistry;
 import rpc.serializer.KryoSerializer;
+import rpc.serializer.ProtobufSerializer;
 
 public class NettyTestServer {
     public static void main(String[] args) {
@@ -13,7 +14,7 @@ public class NettyTestServer {
         ServiceRegistry registry = new DefaultServiceRegistry();
         registry.register(helloService);
         NettyServer server = new NettyServer();
-        server.setSerializer(new KryoSerializer());
+        server.setSerializer(new ProtobufSerializer());
         server.start(9999);
 
     }
