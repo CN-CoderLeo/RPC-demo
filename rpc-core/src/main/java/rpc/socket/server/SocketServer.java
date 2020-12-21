@@ -3,14 +3,18 @@ package rpc.socket.server;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rpc.RequestHandler;
+import rpc.RpcServer;
+import rpc.enumeration.RpcError;
+import rpc.exception.RpcException;
 import rpc.regisitry.ServiceRegistry;
+import rpc.serializer.CommonSerializer;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.*;
 
-public class SocketServer {
+public class SocketServer implements RpcServer {
     private static final Logger logger = LoggerFactory.getLogger(SocketServer.class);
 
     private static final int CORE_POOL_SIZE = 5;
@@ -20,6 +24,8 @@ public class SocketServer {
     private final ExecutorService threadPool;
     private RequestHandler requestHandler = new RequestHandler();
     private final ServiceRegistry serviceRegistry;
+    private CommonSerializer serializer;
+
 
     public SocketServer(ServiceRegistry serviceRegistry) {
         this.serviceRegistry = serviceRegistry;
@@ -29,12 +35,16 @@ public class SocketServer {
     }
 
     public void start(int port) {
+        if(serializer == null) {
+            logger.error("未设置序列化器");
+            throw new RpcException(RpcError.SERIALIZER_NOT_FOUND);
+        }
         try (ServerSocket serverSocket = new ServerSocket(port)) {
             logger.info("服务器启动……");
             Socket socket;
-            while((socket = serverSocket.accept()) != null) {
+            while ((socket = serverSocket.accept()) != null) {
                 logger.info("消费者连接: {}:{}", socket.getInetAddress(), socket.getPort());
-                threadPool.execute(new RequestHandlerThread(socket, requestHandler, serviceRegistry));
+                threadPool.execute(new RequestHandlerThread(socket, requestHandler, serviceRegistry, serializer));
             }
             threadPool.shutdown();
         } catch (IOException e) {
@@ -42,6 +52,10 @@ public class SocketServer {
         }
     }
 
+    @Override
+    public void setSerializer(CommonSerializer commonSerializer) {
+        this.serializer=commonSerializer;
+    }
 
 
 }

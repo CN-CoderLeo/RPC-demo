@@ -6,10 +6,11 @@ import rpc.RequestHandler;
 import rpc.entity.RpcRequest;
 import rpc.entity.RpcResponse;
 import rpc.regisitry.ServiceRegistry;
+import rpc.serializer.CommonSerializer;
+import rpc.socket.util.ObjectReader;
+import rpc.socket.util.ObjectWriter;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.net.Socket;
 
 public class RequestHandlerThread implements  Runnable {
@@ -20,29 +21,27 @@ public class RequestHandlerThread implements  Runnable {
     private Socket socket;
     private RequestHandler requestHandler;
     private ServiceRegistry serviceRegistry;
+    private CommonSerializer serializer;
 
-
-    public RequestHandlerThread(Socket socket,RequestHandler requestHandler,ServiceRegistry serviceRegistry){
+    public RequestHandlerThread(Socket socket,RequestHandler requestHandler,ServiceRegistry serviceRegistry,CommonSerializer commonSerializer){
         this.socket=socket;
         this.requestHandler=requestHandler;
         this.serviceRegistry=serviceRegistry;
+        this.serializer=commonSerializer;
     }
 
     @Override
     public void run() {
 
-        try(
-                ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());
-                ObjectOutputStream objectOutputStream = new ObjectOutputStream(socket.getOutputStream())
-        ){
-
-            RpcRequest rpcRequest = (RpcRequest) objectInputStream.readObject();
-            String interfaceName=rpcRequest.getInterfaceName();
-            Object service= serviceRegistry.getService(interfaceName);
-            Object result=requestHandler.handle(rpcRequest,service);
-            objectOutputStream.writeObject(RpcResponse.success(result));
-            objectOutputStream.flush();
-        }catch (IOException |ClassNotFoundException  e){
+        try (InputStream inputStream = socket.getInputStream();
+             OutputStream outputStream = socket.getOutputStream()) {
+            RpcRequest rpcRequest = (RpcRequest) ObjectReader.readObject(inputStream);
+            String interfaceName = rpcRequest.getInterfaceName();
+            Object service = serviceRegistry.getService(interfaceName);
+            Object result = requestHandler.handle(rpcRequest, service);
+            RpcResponse<Object> response = RpcResponse.success(result);
+            ObjectWriter.writeObject(outputStream, response, serializer);
+        } catch (IOException e) {
             logger.error("调用或发送时有错误发生：", e);
         }
 
