@@ -16,6 +16,7 @@ import rpc.entity.RpcResponse;
 import rpc.enumeration.RpcError;
 import rpc.exception.RpcException;
 import rpc.serializer.CommonSerializer;
+import rpc.util.RpcMessageChecker;
 
 
 public class NettyClient implements RpcClient {
@@ -71,8 +72,9 @@ public class NettyClient implements RpcClient {
                     }
                 });
                 channel.closeFuture().sync();
-                AttributeKey<RpcResponse> key = AttributeKey.valueOf("rpcResponse");
+                AttributeKey<RpcResponse> key = AttributeKey.valueOf("rpcResponse"+rpcRequest.getRequestId());
                 RpcResponse rpcResponse = channel.attr(key).get();
+                RpcMessageChecker.check(rpcRequest, rpcResponse);
                 return rpcResponse.getData();
             }
         } catch (InterruptedException e) {
