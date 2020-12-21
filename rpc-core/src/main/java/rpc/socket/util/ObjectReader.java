@@ -18,6 +18,7 @@ public class ObjectReader {
     private static final int MAGIC_NUMBER = 0xCAFEBABE;
 
     public static Object readObject(InputStream in) throws IOException {
+
         byte[] numberBytes = new byte[4];
         in.read(numberBytes);
         int magic = bytesToInt(numberBytes);
@@ -52,10 +53,10 @@ public class ObjectReader {
 
     public static int bytesToInt(byte[] src) {
         int value;
-        value = (src[0] & 0xFF)
-                | ((src[1] & 0xFF)<<8)
-                | ((src[2] & 0xFF)<<16)
-                | ((src[3] & 0xFF)<<24);
+        value = ((src[0] & 0xFF)<<24)
+                |((src[1] & 0xFF)<<16)
+                |((src[2] & 0xFF)<<8)
+                |(src[3] & 0xFF);
         return value;
     }
 
