@@ -29,11 +29,16 @@ public class NettyClient implements RpcClient {
 
     private static final Bootstrap bootstrap;
     private static final EventLoopGroup group;
-    private CommonSerializer serializer;
+    private final CommonSerializer serializer;
     private final ServiceDiscovery serviceDiscovery;
 
     public NettyClient() {
-        this.serviceDiscovery=new NacosServiceDiscovery();
+        this(DEFAULT_SERIALIZER);
+    }
+
+    public NettyClient(Integer serializer) {
+        this.serviceDiscovery = new NacosServiceDiscovery();
+        this.serializer = CommonSerializer.getByCode(serializer);
     }
 
 
@@ -79,10 +84,7 @@ public class NettyClient implements RpcClient {
         }
         return result.get();
     }
-    @Override
-    public void setSerializer(CommonSerializer commonSerializer) {
-        this.serializer=commonSerializer;
-    }
+
 
 
 }

@@ -25,12 +25,16 @@ import java.net.Socket;
 public class SocketClient implements RpcClient {
 
     private static final Logger logger=LoggerFactory.getLogger(SocketClient.class);
-    private CommonSerializer serializer;
+    private final CommonSerializer serializer;
     private ServiceDiscovery serviceDiscovery;
 
     public SocketClient() {
-        this.serviceDiscovery=new NacosServiceDiscovery();
+        this(DEFAULT_SERIALIZER);
+    }
 
+    public SocketClient(Integer serializer){
+        this.serviceDiscovery = new NacosServiceDiscovery();
+        this.serializer=CommonSerializer.getByCode(serializer);
     }
 
     public Object sendRequest(RpcRequest rpcRequest){
@@ -64,8 +68,5 @@ public class SocketClient implements RpcClient {
         }
     }
 
-    @Override
-    public void setSerializer(CommonSerializer commonSerializer) {
-        this.serializer=commonSerializer;
-    }
+
 }
