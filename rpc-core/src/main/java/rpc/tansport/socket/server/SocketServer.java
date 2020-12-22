@@ -3,6 +3,7 @@ package rpc.tansport.socket.server;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rpc.handler.RequestHandler;
+import rpc.hook.ShutdownHook;
 import rpc.provider.ServiceProviderImpl;
 import rpc.registry.NacosServiceRegistry;
 import rpc.registry.ServiceRegistry;
@@ -11,7 +12,7 @@ import rpc.enumeration.RpcError;
 import rpc.exception.RpcException;
 import rpc.provider.ServiceProvider;
 import rpc.serializer.CommonSerializer;
-import rpc.util.ThreadPoolFactory;
+import rpc.factory.ThreadPoolFactory;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -41,13 +42,14 @@ public class SocketServer implements RpcServer {
     }
 
     public void start() {
-
-        try (ServerSocket serverSocket = new ServerSocket(port)) {
+        try (ServerSocket serverSocket = new ServerSocket()) {
+            serverSocket.bind(new InetSocketAddress(host, port));
             logger.info("服务器启动……");
+            ShutdownHook.getShutdownHook().addClearAllHook();
             Socket socket;
             while ((socket = serverSocket.accept()) != null) {
                 logger.info("消费者连接: {}:{}", socket.getInetAddress(), socket.getPort());
-                threadPool.execute(new RequestHandlerThread(socket, requestHandler, serviceRegistry, serializer));
+                threadPool.execute(new SocketRequestHandlerThread(socket, requestHandler, serializer));
             }
             threadPool.shutdown();
         } catch (IOException e) {

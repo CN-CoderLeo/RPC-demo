@@ -9,6 +9,7 @@ import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rpc.hook.ShutdownHook;
 import rpc.provider.ServiceProvider;
 import rpc.provider.ServiceProviderImpl;
 import rpc.registry.NacosServiceRegistry;
@@ -69,6 +70,7 @@ public class NettyServer implements RpcServer  {
 
                     });
             ChannelFuture future = serverBootstrap.bind(host,port).sync();
+            ShutdownHook.getShutdownHook().addClearAllHook();
             future.channel().closeFuture().sync();
 
         }catch(InterruptedException e){

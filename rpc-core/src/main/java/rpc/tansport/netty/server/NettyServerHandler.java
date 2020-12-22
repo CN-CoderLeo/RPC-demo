@@ -9,10 +9,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rpc.entity.RpcRequest;
 import rpc.entity.RpcResponse;
+import rpc.factory.SingletonFactory;
 import rpc.provider.ServiceProviderImpl;
 import rpc.provider.ServiceProvider;
 import rpc.handler.RequestHandler;
-import rpc.util.ThreadPoolFactory;
+import rpc.factory.ThreadPoolFactory;
 
 import java.util.concurrent.ExecutorService;
 
@@ -21,16 +22,13 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<RpcRequest> 
     private static final Logger logger= LoggerFactory.getLogger(NettyServerHandler.class);
     private static RequestHandler requestHandler;
     private static final String THREAD_NAME_PREFIX = "netty-server-handler";
-    private static ServiceProvider serviceProvider;
-    private static final ExecutorService threadPool;
+    private  final ExecutorService threadPool;
 
 
-    static{
-        requestHandler=new RequestHandler();
-        serviceProvider =new ServiceProviderImpl();
-        threadPool= ThreadPoolFactory.createDefaultThreadPool(THREAD_NAME_PREFIX);
+    public NettyServerHandler() {
+        this.requestHandler = SingletonFactory.getInstance(RequestHandler.class);
+        this.threadPool = ThreadPoolFactory.createDefaultThreadPool(THREAD_NAME_PREFIX);
     }
-
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, RpcRequest msg) throws Exception {
         threadPool.execute(() -> {

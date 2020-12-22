@@ -1,4 +1,4 @@
-package rpc.util;
+package rpc.factory;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
