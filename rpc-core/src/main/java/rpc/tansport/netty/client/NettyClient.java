@@ -1,16 +1,15 @@
-package rpc.netty.client;
+package rpc.tansport.netty.client;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.AttributeKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rpc.RpcClient;
-import rpc.codec.CommonDecoder;
-import rpc.codec.CommonEncoder;
+import rpc.registry.NacosServiceRegistry;
+import rpc.registry.ServiceRegistry;
+import rpc.tansport.RpcClient;
 import rpc.entity.RpcRequest;
 import rpc.entity.RpcResponse;
 import rpc.enumeration.RpcError;
@@ -25,14 +24,13 @@ import java.util.concurrent.atomic.AtomicReference;
 public class NettyClient implements RpcClient {
     private static final Logger logger = LoggerFactory.getLogger(NettyClient.class);
 
-    private String host;
-    private int port;
+
     private static final Bootstrap bootstrap;
     private CommonSerializer serializer;
+    private final ServiceRegistry serviceRegistry;
 
-    public NettyClient(String host, int port) {
-        this.host = host;
-        this.port = port;
+    public NettyClient() {
+        this.serviceRegistry=new NacosServiceRegistry();
     }
 
 
@@ -54,8 +52,8 @@ public class NettyClient implements RpcClient {
         }
         AtomicReference<Object> result = new AtomicReference<>(null);
         try {
-
-            Channel channel = ChannelProvider.get(new InetSocketAddress(host, port), serializer);
+            InetSocketAddress inetSocketAddress = serviceRegistry.lookupService(rpcRequest.getInterfaceName());
+            Channel channel = ChannelProvider.get(inetSocketAddress, serializer);
             if(channel.isActive()) {
                 channel.writeAndFlush(rpcRequest).addListener(future1 -> {
                     if(future1.isSuccess()) {

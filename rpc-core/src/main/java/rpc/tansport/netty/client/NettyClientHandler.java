@@ -1,4 +1,4 @@
-package rpc.netty.client;
+package rpc.tansport.netty.client;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;

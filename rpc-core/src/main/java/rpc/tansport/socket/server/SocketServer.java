@@ -1,15 +1,20 @@
-package rpc.socket.server;
+package rpc.tansport.socket.server;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rpc.RequestHandler;
-import rpc.RpcServer;
+import rpc.handler.RequestHandler;
+import rpc.provider.ServiceProviderImpl;
+import rpc.registry.NacosServiceRegistry;
+import rpc.registry.ServiceRegistry;
+import rpc.tansport.RpcServer;
 import rpc.enumeration.RpcError;
 import rpc.exception.RpcException;
-import rpc.regisitry.ServiceRegistry;
+import rpc.provider.ServiceProvider;
 import rpc.serializer.CommonSerializer;
+import rpc.util.ThreadPoolFactory;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.*;
@@ -23,22 +28,23 @@ public class SocketServer implements RpcServer {
     private static final int BLOCKING_QUEUE_CAPACITY = 100;
     private final ExecutorService threadPool;
     private RequestHandler requestHandler = new RequestHandler();
-    private final ServiceRegistry serviceRegistry;
+    private final ServiceProvider serviceProvider;
     private CommonSerializer serializer;
+    private String host;
+    private int port;
+    private final ServiceRegistry serviceRegistry;
 
 
-    public SocketServer(ServiceRegistry serviceRegistry) {
-        this.serviceRegistry = serviceRegistry;
-        BlockingQueue<Runnable> workingQueue = new ArrayBlockingQueue<>(BLOCKING_QUEUE_CAPACITY);
-        ThreadFactory threadFactory = Executors.defaultThreadFactory();
-        threadPool = new ThreadPoolExecutor(CORE_POOL_SIZE, MAXIMUM_POOL_SIZE, KEEP_ALIVE_TIME, TimeUnit.SECONDS, workingQueue, threadFactory);
+    public SocketServer(String host,int port) {
+        this.host=host;
+        this.port=port;
+        this.serviceProvider = new ServiceProviderImpl();
+        threadPool = ThreadPoolFactory.createDefaultThreadPool("socket-rpc-server");
+        serviceRegistry=new NacosServiceRegistry();
     }
 
-    public void start(int port) {
-        if(serializer == null) {
-            logger.error("未设置序列化器");
-            throw new RpcException(RpcError.SERIALIZER_NOT_FOUND);
-        }
+    public void start() {
+
         try (ServerSocket serverSocket = new ServerSocket(port)) {
             logger.info("服务器启动……");
             Socket socket;
@@ -58,4 +64,14 @@ public class SocketServer implements RpcServer {
     }
 
 
+    @Override
+    public <T> void publishService(Object service, Class<T> serviceClass) {
+        if(serializer == null) {
+            logger.error("未设置序列化器");
+            throw new RpcException(RpcError.SERIALIZER_NOT_FOUND);
+        }
+        serviceProvider.addServiceProvider(service);
+        serviceRegistry.register(serviceClass.getCanonicalName(), new InetSocketAddress(host, port));
+        start();
+    }
 }
