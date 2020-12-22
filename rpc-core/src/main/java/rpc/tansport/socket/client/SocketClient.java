@@ -3,7 +3,9 @@ package rpc.tansport.socket.client;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rpc.registry.NacosServiceDiscovery;
 import rpc.registry.NacosServiceRegistry;
+import rpc.registry.ServiceDiscovery;
 import rpc.registry.ServiceRegistry;
 import rpc.tansport.RpcClient;
 import rpc.entity.RpcRequest;
@@ -24,10 +26,10 @@ public class SocketClient implements RpcClient {
 
     private static final Logger logger=LoggerFactory.getLogger(SocketClient.class);
     private CommonSerializer serializer;
-    private ServiceRegistry serviceRegistry;
+    private ServiceDiscovery serviceDiscovery;
 
     public SocketClient() {
-        this.serviceRegistry=new NacosServiceRegistry();
+        this.serviceDiscovery=new NacosServiceDiscovery();
 
     }
 
@@ -37,7 +39,7 @@ public class SocketClient implements RpcClient {
             logger.error("未设置序列化器");
             throw new RpcException(RpcError.SERIALIZER_NOT_FOUND);
         }
-        InetSocketAddress inetSocketAddress = serviceRegistry.lookupService(rpcRequest.getInterfaceName());
+        InetSocketAddress inetSocketAddress = serviceDiscovery.lookupService(rpcRequest.getInterfaceName());
         try (Socket socket = new Socket()) {
             socket.connect(inetSocketAddress);
             OutputStream outputStream = socket.getOutputStream();

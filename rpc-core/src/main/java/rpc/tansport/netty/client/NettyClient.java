@@ -7,7 +7,9 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.AttributeKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rpc.registry.NacosServiceDiscovery;
 import rpc.registry.NacosServiceRegistry;
+import rpc.registry.ServiceDiscovery;
 import rpc.registry.ServiceRegistry;
 import rpc.tansport.RpcClient;
 import rpc.entity.RpcRequest;
@@ -27,10 +29,10 @@ public class NettyClient implements RpcClient {
 
     private static final Bootstrap bootstrap;
     private CommonSerializer serializer;
-    private final ServiceRegistry serviceRegistry;
+    private final ServiceDiscovery serviceDiscovery;
 
     public NettyClient() {
-        this.serviceRegistry=new NacosServiceRegistry();
+        this.serviceDiscovery=new NacosServiceDiscovery();
     }
 
 
@@ -52,7 +54,7 @@ public class NettyClient implements RpcClient {
         }
         AtomicReference<Object> result = new AtomicReference<>(null);
         try {
-            InetSocketAddress inetSocketAddress = serviceRegistry.lookupService(rpcRequest.getInterfaceName());
+            InetSocketAddress inetSocketAddress = serviceDiscovery.lookupService(rpcRequest.getInterfaceName());
             Channel channel = ChannelProvider.get(inetSocketAddress, serializer);
             if(channel.isActive()) {
                 channel.writeAndFlush(rpcRequest).addListener(future1 -> {
