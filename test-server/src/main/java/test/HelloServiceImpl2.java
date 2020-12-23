@@ -2,8 +2,10 @@ package test;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rpc.annotation.Service;
 import rpc.api.HelloObject;
 import rpc.api.HelloService;
+
 
 public class HelloServiceImpl2 implements HelloService {
 

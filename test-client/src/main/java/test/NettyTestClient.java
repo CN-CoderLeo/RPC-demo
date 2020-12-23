@@ -1,5 +1,6 @@
 package test;
 
+import rpc.api.ByeService;
 import rpc.tansport.RpcClient;
 import rpc.api.HelloObject;
 import rpc.api.HelloService;
@@ -16,5 +17,7 @@ public class NettyTestClient {
         HelloObject object = new HelloObject(12, "This is a message");
         String res = helloService.hello(object);
         System.out.println(res);
+        ByeService byeService=rpcClientProxy.getProxy(ByeService.class);
+        System.out.println(byeService.bye("netty client"));
     }
 }
