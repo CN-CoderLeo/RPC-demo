@@ -3,10 +3,10 @@ package rpc.tansport.socket.client;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rpc.loadbalance.LoadBalancer;
+import rpc.loadbalance.RandomLoadBalancer;
 import rpc.registry.NacosServiceDiscovery;
-import rpc.registry.NacosServiceRegistry;
 import rpc.registry.ServiceDiscovery;
-import rpc.registry.ServiceRegistry;
 import rpc.tansport.RpcClient;
 import rpc.entity.RpcRequest;
 import rpc.entity.RpcResponse;
@@ -29,12 +29,18 @@ public class SocketClient implements RpcClient {
     private ServiceDiscovery serviceDiscovery;
 
     public SocketClient() {
-        this(DEFAULT_SERIALIZER);
+        this(DEFAULT_SERIALIZER, new RandomLoadBalancer());
+    }
+    public SocketClient(LoadBalancer loadBalancer) {
+        this(DEFAULT_SERIALIZER, loadBalancer);
+    }
+    public SocketClient(Integer serializer) {
+        this(serializer, new RandomLoadBalancer());
     }
 
-    public SocketClient(Integer serializer){
-        this.serviceDiscovery = new NacosServiceDiscovery();
-        this.serializer=CommonSerializer.getByCode(serializer);
+    public SocketClient(Integer serializer, LoadBalancer loadBalancer) {
+        this.serviceDiscovery = new NacosServiceDiscovery(loadBalancer);
+        this.serializer = CommonSerializer.getByCode(serializer);
     }
 
     public Object sendRequest(RpcRequest rpcRequest){

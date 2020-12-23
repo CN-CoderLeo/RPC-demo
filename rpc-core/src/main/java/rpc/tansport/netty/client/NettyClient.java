@@ -4,25 +4,22 @@ import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.util.AttributeKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rpc.factory.SingletonFactory;
+import rpc.loadbalance.LoadBalancer;
+import rpc.loadbalance.RandomLoadBalancer;
 import rpc.registry.NacosServiceDiscovery;
-import rpc.registry.NacosServiceRegistry;
 import rpc.registry.ServiceDiscovery;
-import rpc.registry.ServiceRegistry;
 import rpc.tansport.RpcClient;
 import rpc.entity.RpcRequest;
 import rpc.entity.RpcResponse;
 import rpc.enumeration.RpcError;
 import rpc.exception.RpcException;
 import rpc.serializer.CommonSerializer;
-import rpc.util.RpcMessageChecker;
-
 import java.net.InetSocketAddress;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicReference;
+
 
 
 public class NettyClient implements RpcClient {
@@ -46,8 +43,14 @@ public class NettyClient implements RpcClient {
         this(DEFAULT_SERIALIZER);
     }
 
+    public NettyClient(LoadBalancer loadBalancer) {
+        this(DEFAULT_SERIALIZER, loadBalancer);
+    }
     public NettyClient(Integer serializer) {
-        this.serviceDiscovery = new NacosServiceDiscovery();
+        this(serializer,new RandomLoadBalancer());
+    }
+    public NettyClient(Integer serializer, LoadBalancer loadBalancer) {
+        this.serviceDiscovery = new NacosServiceDiscovery(loadBalancer);
         this.serializer = CommonSerializer.getByCode(serializer);
         this.unprocessedRequests = SingletonFactory.getInstance(UnprocessedRequests.class);
     }
